@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Mail\Message;
 
 class AuthController extends Controller
 {
@@ -116,16 +118,20 @@ class AuthController extends Controller
             DB::beginTransaction();
 
             $validator = Validator::make($request->all(), [
-                'email' => 'required|email|exists:users',
+                'to' => 'required|email',
+                'reset_url' => "required|url"
             ]);
             if ($validator->fails()) {
                 return $this->sendValidationErrors($validator);
             }
 
-            $user = User::where('email', $request->email)->first();
+            $user = User::where('email', $request->to)->first();
+            if (!$user) {
+                return $this->sendErrorOfBadResponse("User not found");
+            }
 
             $exists = DB::table('password_reset_tokens')
-                ->where('email', $request->email)
+                ->where('email', $request->to)
                 ->first();
             if ($exists && Carbon::parse($exists->created_at)->addMinutes(15)->greaterThan(Carbon::now())) {
                 return $this->sendErrorOfUnprocessableEntity("You have already requested a password reset link! Try again after 15 minutes.");
@@ -141,8 +147,18 @@ class AuthController extends Controller
                 ]
             );
 
-            // $resetUrl = env("DOKO_FRONTEND_URL") . "/reset-password?token=" . $token;
-            // Mail::to($user->email)->send(new ResetPasswordMail($user, $resetUrl));
+            $resetLink = $request->reset_url . '?token=' . $token . '&email=' . urlencode($user->email);
+            $html = '
+                <p>Hello ' . $user->first_name . ', </p>
+                <p>You requested a password reset. Click the link below to reset your password:</p>
+                <p><a href="' . e($resetLink) . '">' . e($resetLink) . '</a></p>
+                <p>If you did not request this, please ignore this email.</p>
+            ';
+
+            Mail::html($html, function (Message $message) use ($user) {
+                $message->to($user->email)
+                    ->subject('Password Reset Request');
+            });
 
             DB::commit();
             return $this->sendSuccessResponse('Password reset link sent on your email address');
@@ -158,10 +174,9 @@ class AuthController extends Controller
             DB::beginTransaction();
 
             $validator = Validator::make($request->all(), [
-                'token' => 'required',
-                'password' => 'required|min:8|confirmed',
+                'token' => 'required|string',
+                'new_password' => 'required|min:8',
             ]);
-
             if ($validator->fails()) {
                 return $this->sendValidationErrors($validator);
             }
@@ -172,10 +187,21 @@ class AuthController extends Controller
             }
 
             $user = User::where('email', $tokenData->email)->first();
-            $user->password = $request->password;
+            $user->password = $request->new_password;
             $user->save();
 
             DB::table('password_reset_tokens')->where('email', $tokenData->email)->delete();
+
+            $html = '
+                <p>Hello ' . $user->first_name . ', </p>
+                <p>Your password has been successfully reset.</p>
+                <p>If you did not perform this action, please contact support immediately.</p>
+            ';
+
+            Mail::html($html, function (Message $message) use ($user) {
+                $message->to($user->email)
+                    ->subject('Your Password Has Been Reset');
+            });
 
             DB::commit();
             return $this->sendSuccessResponse('Password reset successfully');
