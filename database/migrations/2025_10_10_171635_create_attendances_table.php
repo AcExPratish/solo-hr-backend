@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('date');
             $table->timestamp('clock_in');
             $table->timestamp('clock_out')->nullable();
-            $table->timestamp('in_note')->nullable();
-            $table->timestamp('out_note')->nullable();
+            $table->string('in_note')->nullable();
+            $table->string('out_note')->nullable();
             $table->timestamps();
         });
     }

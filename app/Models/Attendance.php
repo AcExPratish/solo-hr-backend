@@ -17,4 +17,22 @@ class Attendance extends Model
         'in_note',
         'out_note',
     ];
+
+    public function scopeFilterByDate($query)
+    {
+        if (request()->has('date')) {
+            return $query->whereDate('date', request('date'));
+        }
+
+        return $query;
+    }
+
+    public function scopeFilterByUserId($query)
+    {
+        if (request()->has('user_id')) {
+            return $query->where('user_id', request('user_id'));
+        }
+
+        return $query;
+    }
 }

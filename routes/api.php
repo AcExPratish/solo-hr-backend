@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AttendanceController;
 
 Route::prefix("v1")->group(function () {
     Route::prefix("auth")->group(function () {
@@ -15,5 +16,12 @@ Route::prefix("v1")->group(function () {
             Route::get('me', [AuthController::class, 'getMe']);
             Route::post('logout', [AuthController::class, 'logout']);
         });
+    });
+
+    Route::group(["prefix" => "attendance", "middleware" => ["auth:api"]], function () {
+        Route::get("/", [AttendanceController::class, "index"]);
+        Route::get("/check-attendance", [AttendanceController::class, "checkAttendance"]);
+        Route::post("/punch-in", [AttendanceController::class, "punchIn"]);
+        Route::post("/punch-out", [AttendanceController::class, "punchOut"]);
     });
 });
