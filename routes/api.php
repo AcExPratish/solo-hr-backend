@@ -63,7 +63,7 @@ Route::prefix("v1")->group(function () {
         Route::get('/', [EmployeeController::class, "index"])->middleware("perm:employees.view");
         Route::post('/', [EmployeeController::class, 'store'])->middleware('perm:employees.create');
         Route::get('/{id}', [EmployeeController::class, 'show'])->middleware('perm:employees.view');
-        Route::put('/{id}', [EmployeeController::class, 'update'])->middleware('perm:employees.update');
+        Route::put('/{id}/{slug}', [EmployeeController::class, 'update'])->middleware('perm:employees.update');
         Route::delete('/{id}', [EmployeeController::class, 'destroy'])->middleware('perm:employees.delete');
     });
 });

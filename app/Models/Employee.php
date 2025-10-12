@@ -22,6 +22,9 @@ class Employee extends Model
         'supporting_documents',
         'education',
         'experience',
+        'deleted_at',
+        'created_by_id',
+        'updated_by_id'
     ];
 
     protected $casts = [
@@ -33,6 +36,7 @@ class Employee extends Model
         'supporting_documents'  => 'array',
         'education'             => 'array',
         'experience'            => 'array',
+        'deleted_at'            => 'datetime'
     ];
 
     public function toArray()

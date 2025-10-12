@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\EmployeeFormType;
+use App\Enums\EmployeeFormTypeEnum;
 use App\Models\Employee;
 use App\Models\User;
 use Carbon\Carbon;
@@ -77,8 +79,15 @@ class EmployeeController extends Controller
         try {
             DB::beginTransaction();
 
-            $user =  $this->storeOrUpdateUser($request);
-            $employee = Employee::create(["user_id" => $user->id, "deleted_at" => null]);
+            $user = $this->storeOrUpdateUser($request);
+            $employee = new Employee();
+            $employee->user_id = $user->id;
+            $employee->created_by_id = Auth::id();
+            $employee->updated_by_id = Auth::id();
+            $employee->deleted_at = null;
+            $this->storeOrUpdateBasicInformation($request, $employee);
+            $employee->save();
+
             $data = collect($employee)->merge($user);
 
             DB::commit();
@@ -105,6 +114,34 @@ class EmployeeController extends Controller
         }
     }
 
+    public function update(Request $request, string $id, string $slug): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+
+            $employee = Employee::find($id);
+            if (!$employee) {
+                return $this->sendErrorOfNotFound404("Employee not found");
+            }
+
+            if ($slug == EmployeeFormTypeEnum::BasicInformation->value) {
+                $this->storeOrUpdateUser($request);
+                $this->storeOrUpdateBasicInformation($request, $employee);
+            } else if ($slug == EmployeeFormTypeEnum::PersonalInformation->value) {
+                $this->storeOrUpdateBasicInformation($request, $employee);
+            }
+
+            $employee->save();
+
+            $data = $this->attachUserData($employee);
+
+            DB::commit();
+            return $this->sendSuccessResponse("Employee updated successfully", $data);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->sendErrorOfInternalServer($e->getMessage());
+        }
+    }
     public function destroy(string $id): JsonResponse
     {
         try {
@@ -115,8 +152,12 @@ class EmployeeController extends Controller
                 return $this->sendErrorOfNotFound404('Employee not found');
             }
 
-            $user = User::find($employee->user_id);
-            $user->delete();
+            if ($employee->user_id) {
+                $user = User::find($employee->user_id);
+                if ($user) {
+                    $user->delete();
+                }
+            }
 
             $employee->deleted_at = Carbon::now();
             $employee->save();
@@ -170,24 +211,70 @@ class EmployeeController extends Controller
 
     private function storeOrUpdateUser(Request $request): User
     {
-        $user = User::findOrNew($request->user_id);
-
-        $user->fill([
-            'first_name'  => $request->first_name,
-            'middle_name' => $request->middle_name,
-            'last_name'   => $request->last_name,
-            'email'       => $request->email,
-            'phone'       => $request->phone,
-            'avatar'      => $request->avatar,
-        ]);
-
-        if (!$user->exists) {
-            $user->password = Hash::make(Str::password(12));
+        $user = User::find($request->user_id);
+        if (!$user) {
+            $user = new User();
+            $user->first_name  = $request->first_name;
+            $user->middle_name = $request->middle_name;
+            $user->last_name = $request->last_name;
+            $user->email = $request->email;
+            $user->phone = $request->phone;
+            $user->avatar = $request->avatar;
+            $user->password = Str::password(12);
             $user->created_by_id = Auth::id();
+            $user->updated_by_id = Auth::id();
+            $user->save();
+            return $user;
+        } else {
+            $hasPassword = $request->has('password') && !empty($request->input('password'));
+            $user->update([
+                'first_name' => $request->first_name,
+                'middle_name' => $request->middle_name,
+                'last_name' => $request->last_name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'avatar' => $request->avatar,
+                'password' => $hasPassword ? Hash::make($request->password) : $user->password,
+                'updated_by_id' => Auth::id()
+            ]);
+            return $user;
+        }
+    }
+
+    private function storeOrUpdateBasicInformation(Request $request, Employee $employee): void
+    {
+        $current = (array) ($employee->basic_information ?? null);
+        $incoming = (array) $request->input('basic_information', null);
+        $allowed = [
+            'date_of_birth',
+            'gender',
+            'nationality',
+            'religion',
+            'marital_status',
+            'employment_of_spouse',
+            'no_of_children',
+            'blood_group',
+            'joining_date',
+            'department_id',
+            'designation_id',
+            'province',
+            'district',
+            'city',
+            'address',
+            'zip_code',
+            'postal_code',
+            'about',
+        ];
+
+        $incoming = array_intersect_key($incoming, array_flip($allowed));
+        foreach ($incoming as $k => $v) {
+            if ($v === '' || (is_array($v) && $v === [])) {
+                $incoming[$k] = null;
+            }
         }
 
-        $user->updated_by_id = Auth::id();
-        $user->save();
-        return $user;
+        $merged = array_replace($current, $incoming);
+
+        $employee->basic_information = $merged;
     }
 }
