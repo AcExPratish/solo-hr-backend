@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CheckPermissions;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -14,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'token.refresh' => \App\Http\Middleware\TokenRefreshMiddleware::class,
+            'perm' => CheckPermissions::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

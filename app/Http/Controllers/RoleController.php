@@ -99,21 +99,41 @@ class RoleController extends Controller
                 return $this->sendValidationErrors($validator);
             }
 
-            $role->fill(
-                [
-                    'description'  => $request->has('description')  ? $request->description  : $role->description,
-                ]
-            )->save();
+            $role->fill([
+                'description' => $request->has('description') ? $request->description : $role->description,
+            ])->save();
 
             if ($request->has('permissions')) {
-                $ids = is_array($request->permissions) ? $request->permissions : [];
+                $incoming = $request->input('permissions', []);
+
+                $ids = collect($incoming)
+                    ->map(function ($item) {
+                        if (is_string($item)) return $item;
+                        if (is_array($item)) return $item['id'] ?? null;
+                        if (is_object($item)) return $item->id ?? null;
+                        return null;
+                    })
+                    ->filter()
+                    ->values()
+                    ->all();
+
+                if (empty($ids)) {
+                    DB::rollBack();
+                    return $this->sendErrorOfBadResponse('Invalid permissions payload');
+                }
+
+                $found = Permission::whereIn('id', $ids)->count();
+                if ($found !== count($ids)) {
+                    DB::rollBack();
+                    return $this->sendErrorOfBadResponse('One or more permissions are invalid');
+                }
+
                 $role->permissions()->sync($ids);
             }
 
             $role->load('permissions');
 
             DB::commit();
-
             return $this->sendSuccessResponse('Role updated successfully', $role);
         } catch (\Exception $e) {
             DB::rollBack();
