@@ -3,63 +3,33 @@
 namespace App\Http\Controllers;
 
 use App\Models\Permission;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PermissionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
-    }
+        try {
+            $page  = request('page') ? (int) request('page') : 1;
+            $limit = request('limit') ? (int) request('limit') : 10;
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+            $query = Permission::query()->orderByDesc('created_at');
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+            $total = (clone $query)->count();
+            $permissions  = $query->skip(value: ($page - 1) * $limit)
+                ->take($limit)
+                ->get();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Permission $permission)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Permission $permission)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Permission $permission)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Permission $permission)
-    {
-        //
+            return $this->sendPaginateResponse(
+                'Fetch all permissions',
+                $page,
+                $limit,
+                $total,
+                $permissions
+            );
+        } catch (\Exception $e) {
+            return $this->sendErrorOfInternalServer($e->getMessage());
+        }
     }
 }

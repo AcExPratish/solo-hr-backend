@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\PermissionController;
 
 Route::prefix("v1")->group(function () {
     Route::prefix("auth")->group(function () {
@@ -23,5 +25,17 @@ Route::prefix("v1")->group(function () {
         Route::get("/check-attendance", [AttendanceController::class, "checkAttendance"]);
         Route::post("/punch-in", [AttendanceController::class, "punchIn"]);
         Route::post("/punch-out", [AttendanceController::class, "punchOut"]);
+    });
+
+    Route::group(["prefix" => "roles", "middleware" => ["auth:api"]], function () {
+        Route::get("/", [RoleController::class, "index"]);
+        Route::post("/", [RoleController::class, "store"]);
+        Route::get("/{id}", [RoleController::class, "show"]);
+        Route::put("/{id}", [RoleController::class, "update"]);
+        Route::delete("/{id}", [RoleController::class, "destroy"]);
+    });
+
+    Route::group(["prefix" => "permissions", "middleware" => ["auth:api"]], function () {
+        Route::get("/", [PermissionController::class, "index"]);
     });
 });

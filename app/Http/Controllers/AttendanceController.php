@@ -17,18 +17,21 @@ class AttendanceController extends Controller
             $page = request('page') ? request('page') : 1;
             $limit = request('limit') ? request('limit') : 20;
 
-            $attendances = Attendance::skip(($page - 1) * $limit)
+            $query = Attendance::query()
                 ->filterByDate()
-                ->filterByUserId()
+                ->filterByUserId();
+
+            $total = (clone $query)->count();
+            $attendances  = $query->skip(value: ($page - 1) * $limit)
                 ->take($limit)
-                ->orderByDesc('date')
+                ->orderByDesc('created_at')
                 ->get();
 
             return $this->sendPaginateResponse(
                 "List of attendances",
                 $page,
                 $limit,
-                Attendance::count(),
+                $total,
                 $attendances
             );
         } catch (\Exception $e) {

@@ -11,7 +11,6 @@ class Permission extends Model
     use HasUuids;
 
     protected $fillable = [
-        'code',
         'description',
     ];
 
