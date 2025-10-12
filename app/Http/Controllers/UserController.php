@@ -170,14 +170,14 @@ class UserController extends Controller
     {
         if ($id) {
             return [
-                'first_name'  => ['sometimes', 'string', 'max:100'],
-                'middle_name' => ['sometimes', 'nullable', 'string', 'max:100'],
-                'last_name'   => ['sometimes', 'string', 'max:100'],
-                'phone'       => ['sometimes', 'nullable', 'string', 'max:50'],
+                'first_name'  => ['required', 'string', 'max:100'],
+                'middle_name' => ['nullable', 'nullable', 'string', 'max:100'],
+                'last_name'   => ['required', 'string', 'max:100'],
+                'phone'       => ['required', 'nullable', 'string', 'max:10'],
                 'avatar'      => ['sometimes', 'nullable', 'string', 'max:2048'],
-                'email'       => ['sometimes', 'email', 'max:255', Rule::unique('users', 'email')->ignore($id)],
+                'email'       => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($id)],
                 'password'    => ['sometimes', 'nullable', 'string', 'min:8'],
-                'roles'       => ['sometimes', 'array'],
+                'roles'       => ['required', 'array'],
                 'roles.*'     => ['uuid', Rule::exists('roles', 'id')],
             ];
         } else {
@@ -185,8 +185,8 @@ class UserController extends Controller
                 'first_name'  => ['required', 'string', 'max:100'],
                 'middle_name' => ['nullable', 'string', 'max:100'],
                 'last_name'   => ['required', 'string', 'max:100'],
-                'phone'       => ['nullable', 'string', 'max:50'],
-                'avatar'      => ['nullable', 'string', 'max:2048'],
+                'phone'       => ['required', 'string', 'max:50'],
+                'avatar'      => ['sometimes', 'nullable', 'string', 'max:2048'],
                 'email'       => ['required', 'email', 'max:255', 'unique:users,email'],
                 'password'    => ['required', 'string', 'min:8'],
                 'roles'       => ['required', 'array'],

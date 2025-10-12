@@ -7,7 +7,6 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -50,8 +49,6 @@ class HolidayController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-            DB::beginTransaction();
-
             $validator = Validator::make($request->all(), $this->rules());
             if ($validator->fails()) {
                 return $this->sendValidationErrors($validator);
@@ -72,10 +69,8 @@ class HolidayController extends Controller
                 'updated_by_id' => Auth::id(),
             ]);
 
-            DB::commit();
             return $this->sendSuccessResponse('Holiday created successfully', $holiday);
         } catch (\Throwable $e) {
-            DB::rollBack();
             return $this->sendErrorOfInternalServer($e->getMessage());
         }
     }
@@ -97,8 +92,6 @@ class HolidayController extends Controller
     public function update(Request $request, string $id): JsonResponse
     {
         try {
-            DB::beginTransaction();
-
             $holiday = Holiday::find($id);
             if (! $holiday) {
                 return $this->sendErrorOfNotFound404('Holiday not found');
@@ -128,10 +121,8 @@ class HolidayController extends Controller
                 'updated_by_id' => Auth::id(),
             ])->save();
 
-            DB::commit();
             return $this->sendSuccessResponse('Holiday updated successfully', $holiday);
         } catch (\Throwable $e) {
-            DB::rollBack();
             return $this->sendErrorOfInternalServer($e->getMessage());
         }
     }
@@ -139,8 +130,6 @@ class HolidayController extends Controller
     public function destroy(string $id): JsonResponse
     {
         try {
-            DB::beginTransaction();
-
             $holiday = Holiday::find($id);
             if (!$holiday) {
                 return $this->sendErrorOfNotFound404('Holiday not found');
@@ -151,10 +140,8 @@ class HolidayController extends Controller
                 'updated_by_id' => Auth::id(),
             ]);
 
-            DB::commit();
             return $this->sendSuccessResponse('Holiday deleted successfully', $holiday);
         } catch (\Throwable $e) {
-            DB::rollBack();
             return $this->sendErrorOfInternalServer($e->getMessage());
         }
     }
@@ -172,7 +159,7 @@ class HolidayController extends Controller
             $path = $request->file('file')->getRealPath();
             $spreadsheet = IOFactory::load($path);
             $sheet = $spreadsheet->getSheet(0);
-            $rows  = $sheet->toArray(null, true, true, true); // header row + data
+            $rows  = $sheet->toArray(null, true, true, true);
 
             if (count($rows) < 2) {
                 return $this->sendErrorOfBadResponse('No data found in the sheet');
