@@ -28,15 +28,7 @@ class Employee extends Model
     ];
 
     protected $casts = [
-        'basic_information'     => 'array',
-        'emergency_contact'     => 'array',
-        'bank_information'      => 'array',
-        'family_information'    => 'array',
-        'statutory_information' => 'array',
-        'supporting_documents'  => 'array',
-        'education'             => 'array',
-        'experience'            => 'array',
-        'deleted_at'            => 'datetime'
+        'deleted_at' => 'datetime'
     ];
 
     public function toArray()
