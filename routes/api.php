@@ -62,7 +62,7 @@ Route::prefix("v1")->group(function () {
     Route::group(["prefix" => "employees", "middleware" => ["auth:api"]], function () {
         Route::get('/', [EmployeeController::class, "index"])->middleware("perm:employees.view");
         Route::post('/', [EmployeeController::class, 'store'])->middleware('perm:employees.create');
-        Route::get('/{id}', [EmployeeController::class, 'show'])->middleware("'perm:employees.view'");
+        Route::get('/{id}', [EmployeeController::class, 'show'])->middleware('perm:employees.view');
         Route::put('/{id}', [EmployeeController::class, 'update'])->middleware('perm:employees.update');
         Route::delete('/{id}', [EmployeeController::class, 'destroy'])->middleware('perm:employees.delete');
     });
