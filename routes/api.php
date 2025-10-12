@@ -7,6 +7,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\HolidayController;
+use App\Http\Controllers\EmployeeController;
 
 Route::prefix("v1")->group(function () {
     Route::prefix("auth")->group(function () {
@@ -49,12 +50,20 @@ Route::prefix("v1")->group(function () {
         Route::delete("/{id}", [UserController::class, "destroy"])->middleware('perm:users.delete');
     });
 
-    Route::middleware(["prefix" => "holidays", 'auth:api'])->group(function () {
+    Route::group(["prefix" => "holidays", "middleware" => ["auth:api"]], function () {
         Route::get('/', [HolidayController::class, 'index'])->middleware('perm:holidays.view');
         Route::post('/', [HolidayController::class, 'store'])->middleware('perm:holidays.create');
         Route::get('/{id}', [HolidayController::class, 'show'])->middleware('perm:holidays.view');
         Route::put('/{id}', [HolidayController::class, 'update'])->middleware('perm:holidays.update');
         Route::delete('/{id}', [HolidayController::class, 'destroy'])->middleware('perm:holidays.delete');
         Route::post('/bulk-import', [HolidayController::class, 'bulkImport'])->middleware('perm:holidays.create');
+    });
+
+    Route::group(["prefix" => "employees", "middleware" => ["auth:api"]], function () {
+        Route::get('/', [EmployeeController::class, "index"])->middleware("perm:employees.view");
+        Route::post('/', [EmployeeController::class, 'store'])->middleware('perm:employees.create');
+        Route::get('/{id}', [EmployeeController::class, 'show'])->middleware("'perm:employees.view'");
+        Route::put('/{id}', [EmployeeController::class, 'update'])->middleware('perm:employees.update');
+        Route::delete('/{id}', [EmployeeController::class, 'destroy'])->middleware('perm:employees.delete');
     });
 });
