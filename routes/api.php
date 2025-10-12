@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\PermissionController;
 
 Route::prefix("v1")->group(function () {
@@ -33,6 +34,14 @@ Route::prefix("v1")->group(function () {
         Route::get("/{id}", [RoleController::class, "show"]);
         Route::put("/{id}", [RoleController::class, "update"]);
         Route::delete("/{id}", [RoleController::class, "destroy"]);
+    });
+
+    Route::group(["prefix" => "users", "middleware" => ["auth:api"]], function () {
+        Route::get("/", [UserController::class, "index"]);
+        Route::post("/", [UserController::class, "store"]);
+        Route::get("/{id}", [UserController::class, "show"]);
+        Route::put("/{id}", [UserController::class, "update"]);
+        Route::delete("/{id}", [UserController::class, "destroy"]);
     });
 
     Route::group(["prefix" => "permissions", "middleware" => ["auth:api"]], function () {

@@ -217,7 +217,6 @@ class AuthController extends Controller
             $user = User::where('id', Auth::user()->id)
                 ->with('roles.permissions')
                 ->first();
-
             if (!$user) {
                 return $this->sendErrorOfNotFound404("User not found");
             }

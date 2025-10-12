@@ -94,8 +94,6 @@ class RoleController extends Controller
                 return $this->sendErrorOfNotFound404('Role not found');
             }
 
-            $role->load('permissions');
-
             $validator = Validator::make($request->all(), $this->rules($role->id));
             if ($validator->fails()) {
                 return $this->sendValidationErrors($validator);
@@ -128,12 +126,11 @@ class RoleController extends Controller
         try {
             DB::beginTransaction();
 
-            $role = Role::find($id);
+            $role = Role::withCount('users')->find($id);
             if (!$role) {
                 return $this->sendErrorOfNotFound404('Role not found');
             }
 
-            $role->withCount('users');
             if ($role->users_count > 0) {
                 return $this->sendErrorOfUnprocessableEntity(
                     "Cannot delete role because it is assigned to {$role->users_count} user(s)."
