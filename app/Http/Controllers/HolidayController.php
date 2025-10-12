@@ -47,20 +47,6 @@ class HolidayController extends Controller
         }
     }
 
-    public function show(string $id): JsonResponse
-    {
-        try {
-            $holiday = Holiday::find($id);
-            if (! $holiday) {
-                return $this->sendErrorOfNotFound404('Holiday not found');
-            }
-
-            return $this->sendSuccessResponse('Fetch one holiday', $holiday);
-        } catch (\Throwable $e) {
-            return $this->sendErrorOfInternalServer($e->getMessage());
-        }
-    }
-
     public function store(Request $request): JsonResponse
     {
         try {
@@ -90,6 +76,20 @@ class HolidayController extends Controller
             return $this->sendSuccessResponse('Holiday created successfully', $holiday);
         } catch (\Throwable $e) {
             DB::rollBack();
+            return $this->sendErrorOfInternalServer($e->getMessage());
+        }
+    }
+
+    public function show(string $id): JsonResponse
+    {
+        try {
+            $holiday = Holiday::find($id);
+            if (! $holiday) {
+                return $this->sendErrorOfNotFound404('Holiday not found');
+            }
+
+            return $this->sendSuccessResponse('Fetch one holiday', $holiday);
+        } catch (\Throwable $e) {
             return $this->sendErrorOfInternalServer($e->getMessage());
         }
     }
@@ -139,12 +139,12 @@ class HolidayController extends Controller
     public function destroy(string $id): JsonResponse
     {
         try {
+            DB::beginTransaction();
+
             $holiday = Holiday::find($id);
-            if (! $holiday) {
+            if (!$holiday) {
                 return $this->sendErrorOfNotFound404('Holiday not found');
             }
-
-            DB::beginTransaction();
 
             $holiday->update([
                 'status'        => false,
