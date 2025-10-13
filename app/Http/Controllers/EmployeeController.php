@@ -138,6 +138,10 @@ class EmployeeController extends Controller
                     $this->storeOrUpdateEmergencyContact($request, $employee);
                     break;
 
+                case EmployeeFormTypeEnum::About->value:
+                    $this->storeOrUpdateBasicInformation($request, $employee);
+                    break;
+
                 default:
                     break;
             }
