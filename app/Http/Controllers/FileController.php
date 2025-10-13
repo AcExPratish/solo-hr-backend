@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Traits\FileUploadTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class FileController extends Controller
 {
@@ -20,6 +21,11 @@ class FileController extends Controller
 
             if ($attribute === "avatar") {
                 $imageOrFileType = "Avatar";
+                $validator = Validator::make($request->all(), $this->rules("image"));
+                if ($validator->fails()) {
+                    return $this->sendValidationErrors($validator);
+                }
+
                 $response =  $this->uploadOrUpdateFile($file, "/user/avatar");
             }
 
@@ -30,6 +36,18 @@ class FileController extends Controller
             return $this->sendSuccessResponse($imageOrFileType . " " . "changed successfully", $response);
         } catch (\Exception $e) {
             return $this->sendErrorOfInternalServer($e->getMessage());
+        }
+    }
+
+    private function rules(string $type): array
+    {
+        if ($type === "image") {
+            return [
+                "file" => "nullable|image|mimes:jpeg,png,jpg|max:10",
+                "attribute" => "required|string|in:avatar"
+            ];
+        } else {
+            return [];
         }
     }
 }
