@@ -6,6 +6,7 @@ use App\Enums\EmployeeFormType;
 use App\Enums\EmployeeFormTypeEnum;
 use App\Models\Employee;
 use App\Models\User;
+use App\Traits\FileUploadTrait;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\DB;
 
 class EmployeeController extends Controller
 {
+    use FileUploadTrait;
+
     public function index(): JsonResponse
     {
         try {
@@ -211,18 +214,17 @@ class EmployeeController extends Controller
         $userIds = $rows->pluck('user_id')->filter()->unique()->values()->all();
 
         $users = User::whereIn('id', $userIds)
-            ->get(['id', 'first_name', 'middle_name', 'last_name', 'email', 'phone', 'avatar'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name', 'email', 'phone'])
             ->keyBy('id');
 
         return $rows->map(function ($row) use ($users) {
             $user = $users->get($row->user_id);
             if ($user) {
-                $row->setAttribute('first_name',  $user->first_name);
+                $row->setAttribute('first_name', $user->first_name);
                 $row->setAttribute('middle_name', $user->middle_name);
-                $row->setAttribute('last_name',   $user->last_name);
-                $row->setAttribute('email',       $user->email);
-                $row->setAttribute('phone',       $user->phone);
-                $row->setAttribute('avatar',      $user->avatar);
+                $row->setAttribute('last_name', $user->last_name);
+                $row->setAttribute('email', $user->email);
+                $row->setAttribute('phone', $user->phone);
             }
             return $row;
         });
@@ -238,8 +240,8 @@ class EmployeeController extends Controller
             $user->last_name = $request->last_name;
             $user->email = $request->email;
             $user->phone = $request->phone;
-            $user->avatar = $request->avatar;
             $user->password = Str::password(12);
+            $user->avatar = $request->avatar;
             $user->created_by_id = Auth::id();
             $user->updated_by_id = Auth::id();
             $user->save();

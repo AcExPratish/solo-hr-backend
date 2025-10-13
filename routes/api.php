@@ -8,6 +8,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\FileController;
 
 Route::prefix("v1")->group(function () {
     Route::prefix("auth")->group(function () {
@@ -65,5 +66,9 @@ Route::prefix("v1")->group(function () {
         Route::get('/{id}', [EmployeeController::class, 'show'])->middleware('perm:employees.view');
         Route::put('/{id}/{slug}', [EmployeeController::class, 'update'])->middleware('perm:employees.update');
         Route::delete('/{id}', [EmployeeController::class, 'destroy'])->middleware('perm:employees.delete');
+    });
+
+    Route::group(["prefix" => "file"], function () {
+        Route::post('/upload', [FileController::class, 'upload']);
     });
 });
