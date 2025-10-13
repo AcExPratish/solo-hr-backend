@@ -13,11 +13,13 @@ class FileController extends Controller
     public function upload(Request $request): JsonResponse
     {
         try {
+            $imageOrFileType = "";
             $response = "false";
             $file = $request->file("file");
             $attribute = $request->input("attribute");
 
             if ($attribute === "avatar") {
+                $imageOrFileType = "Avatar";
                 $response =  $this->uploadOrUpdateFile($file, "/user/avatar");
             }
 
@@ -25,7 +27,7 @@ class FileController extends Controller
                 return $this->sendErrorOfUnprocessableEntity("Unable to upload file. Please try again later.");
             }
 
-            return $this->sendSuccessResponse("File/Image changed successfully", $response);
+            return $this->sendSuccessResponse($imageOrFileType . " " . "changed successfully", $response);
         } catch (\Exception $e) {
             return $this->sendErrorOfInternalServer($e->getMessage());
         }
