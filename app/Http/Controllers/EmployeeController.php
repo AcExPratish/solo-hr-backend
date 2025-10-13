@@ -214,7 +214,7 @@ class EmployeeController extends Controller
         $userIds = $rows->pluck('user_id')->filter()->unique()->values()->all();
 
         $users = User::whereIn('id', $userIds)
-            ->get(['id', 'first_name', 'middle_name', 'last_name', 'email', 'phone'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name', 'email', 'phone', 'avatar'])
             ->keyBy('id');
 
         return $rows->map(function ($row) use ($users) {
@@ -225,6 +225,7 @@ class EmployeeController extends Controller
                 $row->setAttribute('last_name', $user->last_name);
                 $row->setAttribute('email', $user->email);
                 $row->setAttribute('phone', $user->phone);
+                $row->setAttribute('avatar', $user->avatar);
             }
             return $row;
         });
