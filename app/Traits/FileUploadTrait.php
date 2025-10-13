@@ -12,8 +12,7 @@ trait FileUploadTrait
 
     public function __construct()
     {
-        // $this->storage = config('filesystems.default');
-        $this->storage = "public";
+        $this->storage = config('filesystems.default');
     }
 
     public function uploadOrUpdateFile($file, string $folder): string|null
