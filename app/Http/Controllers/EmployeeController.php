@@ -142,6 +142,10 @@ class EmployeeController extends Controller
                     $this->storeOrUpdateBasicInformation($request, $employee);
                     break;
 
+                case EmployeeFormTypeEnum::BankInformation->value:
+                    $this->storeOrUpdateBankInformation($request, $employee);
+                    break;
+
                 default:
                     break;
             }
@@ -330,5 +334,30 @@ class EmployeeController extends Controller
         }
 
         $employee->emergency_contact = $clean;
+    }
+
+    private function storeOrUpdateBankInformation(Request $request, Employee $employee): void
+    {
+        $current = (array) ($employee->bank_information ?? null);
+        $incoming = (array) $request->input('bank_information', null);
+        $allowed = [
+            'account_holder_name',
+            'account_number',
+            'account_type',
+            'bank_name',
+            'branch_address',
+            'swift_code'
+        ];
+
+        $incoming = array_intersect_key($incoming, array_flip($allowed));
+        foreach ($incoming as $k => $v) {
+            if ($v === '' || (is_array($v) && $v === [])) {
+                $incoming[$k] = null;
+            }
+        }
+
+        $merged = array_replace($current, $incoming);
+
+        $employee->bank_information = $merged;
     }
 }

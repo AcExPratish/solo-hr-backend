@@ -8,4 +8,5 @@ enum EmployeeFormTypeEnum: string
     case PersonalInformation = 'personal_info';
     case EmergencyContact = 'emergency_contact';
     case About = 'about_employee';
+    case BankInformation = 'bank_information';
 }
