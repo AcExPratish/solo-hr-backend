@@ -124,11 +124,22 @@ class EmployeeController extends Controller
                 return $this->sendErrorOfNotFound404("Employee not found");
             }
 
-            if ($slug == EmployeeFormTypeEnum::BasicInformation->value) {
-                $this->storeOrUpdateUser($request);
-                $this->storeOrUpdateBasicInformation($request, $employee);
-            } else if ($slug == EmployeeFormTypeEnum::PersonalInformation->value) {
-                $this->storeOrUpdateBasicInformation($request, $employee);
+            switch ($slug) {
+                case EmployeeFormTypeEnum::BasicInformation->value:
+                    $this->storeOrUpdateUser($request);
+                    $this->storeOrUpdateBasicInformation($request, $employee);
+                    break;
+
+                case EmployeeFormTypeEnum::PersonalInformation->value:
+                    $this->storeOrUpdateBasicInformation($request, $employee);
+                    break;
+
+                case EmployeeFormTypeEnum::EmergencyContact->value:
+                    $this->storeOrUpdateEmergencyContact($request, $employee);
+                    break;
+
+                default:
+                    break;
             }
 
             $employee->save();
@@ -276,5 +287,44 @@ class EmployeeController extends Controller
         $merged = array_replace($current, $incoming);
 
         $employee->basic_information = $merged;
+    }
+
+    private function storeOrUpdateEmergencyContact(Request $request, Employee $employee): void
+    {
+        $incoming = $request->input('emergency_contact', null);
+        if ($incoming === null) {
+            return;
+        }
+
+        $rows = is_array($incoming) ? array_values($incoming) : [];
+        $allowed = ['name', 'relationship', 'phone_1', 'phone_2'];
+        $clean   = [];
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $filtered = array_intersect_key($row, array_flip($allowed));
+            foreach ($filtered as $k => $v) {
+                if ($v === '' || (is_array($v) && $v === [])) {
+                    $filtered[$k] = null;
+                } elseif (in_array($k, ['phone_1', 'phone_2'], true) && is_string($v)) {
+                    $v = preg_replace('/[^\d+]/', '', $v);
+                    $filtered[$k] = $v !== '' ? $v : null;
+                } elseif (is_string($v)) {
+                    $filtered[$k] = trim($v);
+                }
+            }
+
+            $filtered += ['name' => null, 'relationship' => null, 'phone_1' => null, 'phone_2' => null];
+            if ($filtered['name'] === null && $filtered['phone_1'] === null && $filtered['phone_2'] === null) {
+                continue;
+            }
+
+            $clean[] = $filtered;
+        }
+
+        $employee->emergency_contact = $clean;
     }
 }
