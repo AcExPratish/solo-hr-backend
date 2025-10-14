@@ -149,6 +149,18 @@ class EmployeeController extends Controller
                     $this->storeOrUpdateBankInformation($request, $employee);
                     break;
 
+                case EmployeeFormTypeEnum::FamilyInformation->value:
+                    $this->storeOrUpdateFamilyInformation($request, $employee);
+                    break;
+
+                case EmployeeFormTypeEnum::Education->value:
+                    $this->storeOrUpdateEducation($request, $employee);
+                    break;
+
+                case EmployeeFormTypeEnum::Experience->value:
+                    $this->storeOrUpdateExperience($request, $employee);
+                    break;
+
                 default:
                     break;
             }
@@ -309,7 +321,7 @@ class EmployeeController extends Controller
 
         $rows = is_array($incoming) ? array_values($incoming) : [];
         $allowed = ['name', 'relationship', 'phone_1', 'phone_2'];
-        $clean   = [];
+        $clean = [];
 
         foreach ($rows as $row) {
             if (!is_array($row)) {
@@ -362,5 +374,163 @@ class EmployeeController extends Controller
         $merged = array_replace($current, $incoming);
 
         $employee->bank_information = $merged;
+    }
+
+    private function storeOrUpdateFamilyInformation(Request $request, Employee $employee): void
+    {
+        $incoming = $request->input('family_information', null);
+        if ($incoming === null) {
+            return;
+        }
+
+        $rows = is_array($incoming) ? array_values($incoming) : [];
+        $allowed = ['name', 'relationship', 'phone_1', 'phone_2'];
+        $clean = [];
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $filtered = array_intersect_key($row, array_flip($allowed));
+            foreach ($filtered as $k => $v) {
+                if ($v === '' || (is_array($v) && $v === [])) {
+                    $filtered[$k] = null;
+                } elseif (in_array($k, ['phone_1', 'phone_2'], true) && is_string($v)) {
+                    $v = preg_replace('/[^\d+]/', '', $v);
+                    $filtered[$k] = $v !== '' ? $v : null;
+                } elseif (is_string($v)) {
+                    $filtered[$k] = trim($v);
+                }
+            }
+
+            $filtered += ['name' => null, 'relationship' => null, 'phone_1' => null, 'phone_2' => null];
+            if ($filtered['name'] === null && $filtered['phone_1'] === null && $filtered['phone_2'] === null) {
+                continue;
+            }
+
+            $clean[] = $filtered;
+        }
+
+        $employee->family_information = $clean;
+    }
+
+    private function storeOrUpdateEducation(Request $request, Employee $employee): void
+    {
+        $incoming = $request->input('education', null);
+        if ($incoming === null) {
+            return;
+        }
+
+        $rows = is_array($incoming) ? array_values($incoming) : [];
+        $allowed = [
+            'institution_name',
+            'course',
+            'start_date',
+            'end_date',
+            'percentage_or_gpa',
+            'is_current'
+        ];
+
+        $clean = [];
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $filtered = array_intersect_key($row, array_flip($allowed));
+            foreach ($filtered as $k => $v) {
+                if ($v === '' || $v === [] || $v === null) {
+                    $filtered[$k] = null;
+                } elseif (is_string($v)) {
+                    $filtered[$k] = trim($v);
+                }
+            }
+
+            $filtered += [
+                'institution_name' => null,
+                'course' => null,
+                'start_date' => null,
+                'end_date' => null,
+                'percentage_or_gpa' => null,
+                'is_current' => null,
+            ];
+
+            if (
+                $filtered['institution_name'] === null &&
+                $filtered['course'] === null &&
+                $filtered['start_date'] === null &&
+                $filtered['end_date'] === null &&
+                $filtered['percentage_or_gpa'] === null &&
+                $filtered['is_current'] === null
+            ) {
+                continue;
+            }
+
+            $filtered['is_current'] = filter_var($filtered['is_current'], FILTER_VALIDATE_BOOLEAN);
+
+            $clean[] = $filtered;
+        }
+
+        $employee->education = $clean;
+    }
+
+    private function storeOrUpdateExperience(Request $request, Employee $employee): void
+    {
+        $incoming = $request->input('experience', null);
+        if ($incoming === null) {
+            return;
+        }
+
+        $rows = is_array($incoming) ? array_values($incoming) : [];
+        $allowed = [
+            'company_name',
+            'designation',
+            'start_date',
+            'end_date',
+            'is_current',
+        ];
+
+        $clean = [];
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $filtered = array_intersect_key($row, array_flip($allowed));
+            foreach ($filtered as $k => $v) {
+                if ($v === '' || $v === [] || $v === null) {
+                    $filtered[$k] = null;
+                } elseif (is_string($v)) {
+                    $filtered[$k] = trim($v);
+                }
+            }
+
+            $filtered += [
+                'company_name' => null,
+                'designation' => null,
+                'start_date' => null,
+                'end_date' => null,
+                'is_current' => null,
+            ];
+
+            if (
+                $filtered['company_name'] === null &&
+                $filtered['designation'] === null &&
+                $filtered['start_date'] === null &&
+                $filtered['end_date'] === null &&
+                $filtered['is_current'] === null
+            ) {
+                continue;
+            }
+
+            $filtered['is_current'] = filter_var($filtered['is_current'], FILTER_VALIDATE_BOOLEAN);
+
+            $clean[] = $filtered;
+        }
+
+        $employee->experience = $clean;
     }
 }
