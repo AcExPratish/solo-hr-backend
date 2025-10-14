@@ -14,13 +14,13 @@ class FileController extends Controller
     public function upload(Request $request): JsonResponse
     {
         try {
-            $imageOrFileType = "";
+            $message = "";
             $response = "false";
             $file = $request->file("file");
             $attribute = $request->input("attribute");
 
             if ($attribute === "avatar") {
-                $imageOrFileType = "Avatar";
+                $message = "Avatar changed successfully";
                 $validator = Validator::make($request->all(), $this->rules("image"));
                 if ($validator->fails()) {
                     return $this->sendValidationErrors($validator);
@@ -29,11 +29,21 @@ class FileController extends Controller
                 $response =  $this->uploadOrUpdateFile($file, "/user/avatar");
             }
 
+            if ($attribute === "employees.documents") {
+                $message = "Document changed successfully";
+                $validator = Validator::make($request->all(), $this->rules("image"));
+                if ($validator->fails()) {
+                    return $this->sendValidationErrors($validator);
+                }
+
+                $response =  $this->uploadOrUpdateFile($file, "/employees/documents");
+            }
+
             if ($response === "false") {
                 return $this->sendErrorOfUnprocessableEntity("Unable to upload file. Please try again later.");
             }
 
-            return $this->sendSuccessResponse($imageOrFileType . " " . "changed successfully", $response);
+            return $this->sendSuccessResponse($message, $response);
         } catch (\Exception $e) {
             return $this->sendErrorOfInternalServer($e->getMessage());
         }
@@ -44,7 +54,7 @@ class FileController extends Controller
         if ($type === "image") {
             return [
                 "file" => "nullable|image|mimes:jpeg,png,jpg|max:5222",
-                "attribute" => "required|string|in:avatar"
+                "attribute" => "required|string|in:avatar,employees.documents"
             ];
         } else {
             return [];

@@ -153,6 +153,14 @@ class EmployeeController extends Controller
                     $this->storeOrUpdateFamilyInformation($request, $employee);
                     break;
 
+                case EmployeeFormTypeEnum::StatutoryInformation->value:
+                    $this->storeOrUpdateStatutoryInformation($request, $employee);
+                    break;
+
+                case EmployeeFormTypeEnum::SupportingDocuments->value:
+                    $this->storeOrUpdateSupportingDocuments($request, $employee);
+                    break;
+
                 case EmployeeFormTypeEnum::Education->value:
                     $this->storeOrUpdateEducation($request, $employee);
                     break;
@@ -413,6 +421,120 @@ class EmployeeController extends Controller
         }
 
         $employee->family_information = $clean;
+    }
+
+    private function storeOrUpdateStatutoryInformation(Request $request, Employee $employee): void
+    {
+        $incoming = $request->input('statutory_information', null);
+        if ($incoming === null) {
+            return;
+        }
+
+        if (!is_array($incoming)) {
+            return;
+        }
+
+        $docTypes  = ['citizen_investment_trust', 'health_insurance', 'police_clearance', 'provident_fund', 'social_security_fund', 'tax_clearance'];
+        $allowed   = ['id_number', 'issue_date', 'expiry_date', 'issuing_authority', 'image'];
+        $clean = [];
+
+        foreach ($docTypes as $docType) {
+            $block = $incoming[$docType] ?? null;
+            if (!is_array($block)) {
+                continue;
+            }
+
+            $filtered = array_intersect_key($block, array_flip($allowed));
+            foreach ($filtered as $k => $v) {
+                if ($v === '' || $v === [] || $v === null) {
+                    $filtered[$k] = null;
+                    continue;
+                }
+
+                if (is_string($v)) {
+                    $filtered[$k] = trim($v);
+                }
+            }
+
+            $filtered += [
+                'id_number' => null,
+                'issue_date' => null,
+                'expiry_date' => null,
+                'issuing_authority' => null,
+                'image' => null,
+            ];
+
+            if (
+                $filtered['id_number'] === null &&
+                $filtered['issue_date'] === null &&
+                $filtered['expiry_date'] === null &&
+                $filtered['issuing_authority'] === null &&
+                $filtered['image'] === null
+            ) {
+                continue;
+            }
+
+            $clean[$docType] = $filtered;
+        }
+
+        $employee->statutory_information = $clean;
+    }
+
+    private function storeOrUpdateSupportingDocuments(Request $request, Employee $employee): void
+    {
+        $incoming = $request->input('supporting_documents', null);
+        if ($incoming === null) {
+            return;
+        }
+
+        if (!is_array($incoming)) {
+            return;
+        }
+
+        $docTypes  = ['pan', 'national_id', 'citizenship', 'passport'];
+        $allowed   = ['id_number', 'issue_date', 'expiry_date', 'issuing_authority', 'image'];
+        $clean = [];
+
+        foreach ($docTypes as $docType) {
+            $block = $incoming[$docType] ?? null;
+            if (!is_array($block)) {
+                continue;
+            }
+
+            $filtered = array_intersect_key($block, array_flip($allowed));
+            foreach ($filtered as $k => $v) {
+                if ($v === '' || $v === [] || $v === null) {
+                    $filtered[$k] = null;
+                    continue;
+                }
+
+                if (is_string($v)) {
+                    $filtered[$k] = trim($v);
+                }
+            }
+
+            $filtered += [
+                'id_number' => null,
+                'issue_date' => null,
+                'expiry_date' => null,
+                'issuing_authority' => null,
+                'image' => null,
+            ];
+
+            if (
+                $filtered['id_number'] === null &&
+                $filtered['issue_date'] === null &&
+                $filtered['expiry_date'] === null &&
+                $filtered['issuing_authority'] === null &&
+                $filtered['image'] === null
+            ) {
+                continue;
+            }
+
+            $clean[$docType] = $filtered;
+        }
+
+        $employee->supporting_documents = $clean;
     }
 
     private function storeOrUpdateEducation(Request $request, Employee $employee): void
