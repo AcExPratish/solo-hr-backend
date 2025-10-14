@@ -435,7 +435,7 @@ class EmployeeController extends Controller
         }
 
         $docTypes  = ['citizen_investment_trust', 'health_insurance', 'police_clearance', 'provident_fund', 'social_security_fund', 'tax_clearance'];
-        $allowed   = ['id_number', 'issue_date', 'expiry_date', 'issuing_authority', 'image'];
+        $allowed   = ['id_number', 'issue_date', 'expiry_date', 'issuing_authority', 'image', 'verification_status'];
         $clean = [];
 
         foreach ($docTypes as $docType) {
@@ -462,7 +462,12 @@ class EmployeeController extends Controller
                 'expiry_date' => null,
                 'issuing_authority' => null,
                 'image' => null,
+                'verification_status' => null,
             ];
+
+            if ($filtered['verification_status'] === null) {
+                $filtered['verification_status'] = 'pending';
+            }
 
             if (
                 $filtered['id_number'] === null &&
@@ -492,7 +497,7 @@ class EmployeeController extends Controller
         }
 
         $docTypes  = ['pan', 'national_id', 'citizenship', 'passport', 'driving_license'];
-        $allowed   = ['id_number', 'issue_date', 'expiry_date', 'issuing_authority', 'image'];
+        $allowed   = ['id_number', 'issue_date', 'expiry_date', 'issuing_authority', 'image', 'verification_status'];
         $clean = [];
 
         foreach ($docTypes as $docType) {
@@ -519,7 +524,12 @@ class EmployeeController extends Controller
                 'expiry_date' => null,
                 'issuing_authority' => null,
                 'image' => null,
+                'verification_status' => null,
             ];
+
+            if ($filtered['verification_status'] === null) {
+                $filtered['verification_status'] = 'pending';
+            }
 
             if (
                 $filtered['id_number'] === null &&
