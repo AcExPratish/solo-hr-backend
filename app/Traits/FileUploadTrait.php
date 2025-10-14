@@ -22,7 +22,7 @@ trait FileUploadTrait
         }
 
         $extension = $file->getClientOriginalExtension();
-        $newName = time() . '_' . Str::random(10) . '.' . $extension;
+        $newName = time() . '_' . Str::uuid() . '.' . $extension;
         $path = $folder . '/' . $newName;
 
         $result = Storage::disk($this->storage)->put($path, $file->get());

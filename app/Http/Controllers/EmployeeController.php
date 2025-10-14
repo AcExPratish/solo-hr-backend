@@ -491,7 +491,7 @@ class EmployeeController extends Controller
             return;
         }
 
-        $docTypes  = ['pan', 'national_id', 'citizenship', 'passport'];
+        $docTypes  = ['pan', 'national_id', 'citizenship', 'passport', 'driving_license'];
         $allowed   = ['id_number', 'issue_date', 'expiry_date', 'issuing_authority', 'image'];
         $clean = [];
 
