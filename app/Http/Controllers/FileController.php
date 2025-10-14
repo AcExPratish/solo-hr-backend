@@ -43,7 +43,7 @@ class FileController extends Controller
     {
         if ($type === "image") {
             return [
-                "file" => "nullable|image|mimes:jpeg,png,jpg|max:10",
+                "file" => "nullable|image|mimes:jpeg,png,jpg|max:5222",
                 "attribute" => "required|string|in:avatar"
             ];
         } else {
