@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Models\Role;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -153,15 +155,25 @@ class UserController extends Controller
     public function destroy(string $id): JsonResponse
     {
         try {
+            DB::beginTransaction();
+
             $user = User::find($id);
             if (!$user) {
                 return $this->sendErrorOfNotFound404('User not found');
             }
 
+            $employee = Employee::where("user_id", $user->id)->first();
+            if ($employee) {
+                $employee->deleted_at = Carbon::now();
+                $employee->save();
+            }
+
             $user->delete();
 
+            DB::commit();
             return $this->sendSuccessResponse('User deleted successfully', $user);
         } catch (\Exception $e) {
+            DB::rollBack();
             return $this->sendErrorOfInternalServer($e->getMessage());
         }
     }
