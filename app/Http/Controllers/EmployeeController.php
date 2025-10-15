@@ -182,6 +182,11 @@ class EmployeeController extends Controller
                     break;
 
                 case EmployeeFormTypeEnum::FamilyInformation->value:
+                    $validator = Validator::make($request->all(), $this->familyInformationRules($employee->user_id));
+                    if ($validator->fails()) {
+                        return $this->sendValidationErrors($validator);
+                    }
+
                     $this->storeOrUpdateFamilyInformation($request, $employee);
                     break;
 
@@ -194,10 +199,20 @@ class EmployeeController extends Controller
                     break;
 
                 case EmployeeFormTypeEnum::Education->value:
+                    $validator = Validator::make($request->all(), $this->educationRules($employee->user_id));
+                    if ($validator->fails()) {
+                        return $this->sendValidationErrors($validator);
+                    }
+
                     $this->storeOrUpdateEducation($request, $employee);
                     break;
 
                 case EmployeeFormTypeEnum::Experience->value:
+                    $validator = Validator::make($request->all(), $this->experienceRules($employee->user_id));
+                    if ($validator->fails()) {
+                        return $this->sendValidationErrors($validator);
+                    }
+
                     $this->storeOrUpdateExperience($request, $employee);
                     break;
 
@@ -835,6 +850,81 @@ class EmployeeController extends Controller
                 "bank_information.account_number" => "required|string|max:255",
                 "bank_information.account_type" => "nullable|string|max:255",
                 "bank_information.swift_code" => "nullable|string|max:255",
+            ];
+        }
+    }
+
+    private function familyInformationRules($id = null): array
+    {
+        if ($id) {
+            return [
+                '_id' => ["required", "string"],
+                'user_id' => ['required', 'uuid', 'exists:users,id'],
+                'family_information' => "required|array",
+                "family_information.*.name" => "required|string|max:50",
+                "family_information.*.relationship" => "required|string|max:100",
+                "family_information.*.phone_1" => "required|digits:10",
+                "family_information.*.phone_2" => "nullable|digits:10",
+            ];
+        } else {
+            return [
+                'family_information' => "required|array",
+                "family_information.*.name" => "required|string|max:50",
+                "family_information.*.relationship" => "required|string|max:100",
+                "family_information.*.phone_1" => "required|digits:10",
+                "family_information.*.phone_2" => "nullable|digits:10",
+            ];
+        }
+    }
+
+    private function educationRules($id = null): array
+    {
+        if ($id) {
+            return [
+                '_id' => ["required", "string"],
+                'user_id' => ['required', 'uuid', 'exists:users,id'],
+                'education' => "required|array",
+                "education.*.institution_name" => "required|string|max:255",
+                "education.*.course" => "required|string|max:255",
+                "education.*.start_date" => "required|date",
+                "education.*.end_date" => 'nullable|date|after_or_equal:education.*.start_date',
+                "education.*.percentage_or_gpa" => "nullable|digits:4",
+                "education.*.is_current" => "required|boolean",
+            ];
+        } else {
+            return [
+                'education' => "required|array",
+                "education.*.institution_name" => "required|string|max:255",
+                "education.*.course" => "required|string|max:255",
+                "education.*.start_date" => "required|date",
+                "education.*.end_date" => 'nullable|date|after_or_equal:education.*.start_date',
+                "education.*.percentage_or_gpa" => "nullable|digits:4",
+                "education.*.is_current" => "required|boolean",
+            ];
+        }
+    }
+
+    private function experienceRules($id = null): array
+    {
+        if ($id) {
+            return [
+                '_id' => ["required", "string"],
+                'user_id' => ['required', 'uuid', 'exists:users,id'],
+                'experience' => "required|array",
+                "experience.*.company_name" => "required|string|max:255",
+                "experience.*.designation" => "required|string|max:255",
+                "experience.*.start_date" => "required|date",
+                "experience.*.end_date" => 'nullable|date|after_or_equal:experience.*.start_date',
+                "experience.*.is_current" => "required|boolean",
+            ];
+        } else {
+            return [
+                'experience' => "required|array",
+                "experience.*.company_name" => "required|string|max:255",
+                "experience.*.designation" => "required|string|max:255",
+                "experience.*.start_date" => "required|date",
+                "experience.*.end_date" => 'nullable|date|after_or_equal:experience.*.start_date',
+                "experience.*.is_current" => "required|boolean",
             ];
         }
     }
