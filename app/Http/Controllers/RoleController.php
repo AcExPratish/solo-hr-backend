@@ -52,7 +52,6 @@ class RoleController extends Controller
 
             $role = Role::create([
                 'name'         => $request->name . " - " . Str::uuid(),
-                'description'  => $request->description,
                 'is_superuser' => (bool) $request->boolean(key: 'is_superuser'),
             ]);
 
@@ -98,10 +97,6 @@ class RoleController extends Controller
             if ($validator->fails()) {
                 return $this->sendValidationErrors($validator);
             }
-
-            $role->fill([
-                'description' => $request->has('description') ? $request->description : $role->description,
-            ])->save();
 
             if ($request->has('permissions')) {
                 $incoming = $request->input('permissions', []);
@@ -174,7 +169,6 @@ class RoleController extends Controller
         if ($id) {
             return [
                 'name'         => ['required', 'string', 'max:100'],
-                'description'  => ['sometimes', 'nullable', 'string', 'max:255'],
                 'is_superuser' => ['sometimes', 'boolean'],
                 'permissions'  => ['required', 'array'],
                 'permissions.*' => ['uuid', Rule::exists('permissions', 'id')],
@@ -182,7 +176,6 @@ class RoleController extends Controller
         } else {
             return [
                 'name'         => ['required', 'string', 'max:100'],
-                'description'  => ['nullable', 'string', 'max:255'],
                 'is_superuser' => ['sometimes', 'boolean'],
                 'permissions'  => ['required', 'array'],
                 'permissions.*' => ['uuid', Rule::exists('permissions', 'id')],
