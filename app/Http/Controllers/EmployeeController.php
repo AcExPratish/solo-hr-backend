@@ -794,7 +794,7 @@ class EmployeeController extends Controller
                 '_id' => ["required", "string"],
                 'user_id' => ['required', 'uuid', 'exists:users,id'],
                 'emergency_contact' => "required|array",
-                "emergency_contact.*.name" => "required|string|max:50",
+                "emergency_contact.*.name" => "required|string|max:100",
                 "emergency_contact.*.relationship" => "required|string|max:100",
                 "emergency_contact.*.phone_1" => "required|digits:10",
                 "emergency_contact.*.phone_2" => "nullable|digits:10",
@@ -802,7 +802,7 @@ class EmployeeController extends Controller
         } else {
             return [
                 'emergency_contact' => "required|array",
-                "emergency_contact.*.name" => "required|string|max:50",
+                "emergency_contact.*.name" => "required|string|max:100",
                 "emergency_contact.*.relationship" => "required|string|max:100",
                 "emergency_contact.*.phone_1" => "required|digits:10",
                 "emergency_contact.*.phone_2" => "nullable|digits:10",
