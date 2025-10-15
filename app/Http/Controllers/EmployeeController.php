@@ -155,14 +155,29 @@ class EmployeeController extends Controller
                     break;
 
                 case EmployeeFormTypeEnum::EmergencyContact->value:
+                    $validator = Validator::make($request->all(), $this->emergencyContactRules($employee->user_id));
+                    if ($validator->fails()) {
+                        return $this->sendValidationErrors($validator);
+                    }
+
                     $this->storeOrUpdateEmergencyContact($request, $employee);
                     break;
 
                 case EmployeeFormTypeEnum::About->value:
+                    $validator = Validator::make($request->all(), $this->aboutRules($employee->user_id));
+                    if ($validator->fails()) {
+                        return $this->sendValidationErrors($validator);
+                    }
+
                     $this->storeOrUpdateBasicInformation($request, $employee);
                     break;
 
                 case EmployeeFormTypeEnum::BankInformation->value:
+                    $validator = Validator::make($request->all(), $this->bankInformationRules($employee->user_id));
+                    if ($validator->fails()) {
+                        return $this->sendValidationErrors($validator);
+                    }
+
                     $this->storeOrUpdateBankInformation($request, $employee);
                     break;
 
@@ -705,7 +720,7 @@ class EmployeeController extends Controller
                 "basic_information.city" => "nullable|string|max:100",
                 "basic_information.address" => "nullable|string|max:255",
                 "basic_information.zip_code" => "required|string|max:100",
-                "basic_information.postal_code" => "required|string|max:100"
+                "basic_information.postal_code" => "required|string|max:100",
             ];
         } else {
             return [
@@ -725,7 +740,7 @@ class EmployeeController extends Controller
                 "basic_information.city" => "nullable|string|max:100",
                 "basic_information.address" => "nullable|string|max:255",
                 "basic_information.zip_code" => "required|string|max:100",
-                "basic_information.postal_code" => "required|string|max:100"
+                "basic_information.postal_code" => "required|string|max:100",
             ];
         }
     }
@@ -753,6 +768,73 @@ class EmployeeController extends Controller
                 "basic_information.marital_status" => "nullable|numeric",
                 "basic_information.employment_of_spouse" => "nullable|string|max:10",
                 "basic_information.no_of_children" => "nullable|numeric|max:10"
+            ];
+        }
+    }
+
+    private function emergencyContactRules($id = null): array
+    {
+        if ($id) {
+            return [
+                '_id' => ["required", "string"],
+                'user_id' => ['required', 'uuid', 'exists:users,id'],
+                'emergency_contact' => "required|array",
+                "emergency_contact.*.name" => "required|string|max:50",
+                "emergency_contact.*.relationship" => "required|string|max:100",
+                "emergency_contact.*.phone_1" => "required|digits:10",
+                "emergency_contact.*.phone_2" => "nullable|digits:10",
+            ];
+        } else {
+            return [
+                'emergency_contact' => "required|array",
+                "emergency_contact.*.name" => "required|string|max:50",
+                "emergency_contact.*.relationship" => "required|string|max:100",
+                "emergency_contact.*.phone_1" => "required|digits:10",
+                "emergency_contact.*.phone_2" => "nullable|digits:10",
+            ];
+        }
+    }
+
+    private function aboutRules($id = null): array
+    {
+        if ($id) {
+            return [
+                '_id' => ["required", "string"],
+                'user_id' => ['required', 'uuid', 'exists:users,id'],
+                'basic_information' => "required|array",
+                "basic_information.about" => "required|string|max:255",
+            ];
+        } else {
+            return [
+                'basic_information' => "required|array",
+                "basic_information.about" => "required|string|max:255",
+            ];
+        }
+    }
+
+    private function bankInformationRules($id = null): array
+    {
+        if ($id) {
+            return [
+                '_id' => ["required", "string"],
+                'user_id' => ['required', 'uuid', 'exists:users,id'],
+                'bank_information' => "required|array",
+                "bank_information.bank_name" => "required|string|max:255",
+                "bank_information.branch_address" => "required|string|max:255",
+                "bank_information.account_holder_name" => "required|string|max:255",
+                "bank_information.account_number" => "required|string|max:255",
+                "bank_information.account_type" => "nullable|string|max:255",
+                "bank_information.swift_code" => "nullable|string|max:255",
+            ];
+        } else {
+            return [
+                'bank_information' => "required|array",
+                "bank_information.bank_name" => "required|string|max:255",
+                "bank_information.branch_address" => "required|string|max:255",
+                "bank_information.account_holder_name" => "required|string|max:255",
+                "bank_information.account_number" => "required|string|max:255",
+                "bank_information.account_type" => "nullable|string|max:255",
+                "bank_information.swift_code" => "nullable|string|max:255",
             ];
         }
     }
