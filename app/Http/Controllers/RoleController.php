@@ -174,7 +174,7 @@ class RoleController extends Controller
         if ($id) {
             return [
                 'name'         => ['required', 'string', 'max:100'],
-                'description'  => ['nullable', 'string', 'max:255'],
+                'description'  => ['sometimes', 'nullable', 'string', 'max:255'],
                 'is_superuser' => ['sometimes', 'boolean'],
                 'permissions'  => ['required', 'array'],
                 'permissions.*' => ['uuid', Rule::exists('permissions', 'id')],

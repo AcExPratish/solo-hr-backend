@@ -146,6 +146,11 @@ class EmployeeController extends Controller
                     break;
 
                 case EmployeeFormTypeEnum::PersonalInformation->value:
+                    $validator = Validator::make($request->all(), $this->personalInformationRules($employee->user_id));
+                    if ($validator->fails()) {
+                        return $this->sendValidationErrors($validator);
+                    }
+
                     $this->storeOrUpdateBasicInformation($request, $employee);
                     break;
 
@@ -682,15 +687,17 @@ class EmployeeController extends Controller
     {
         if ($id) {
             return [
+                '_id' => ["required", "string"],
+                'user_id' => ['required', 'uuid', 'exists:users,id'],
                 'first_name'  => ['required', 'string', 'max:100'],
                 'middle_name' => ['nullable', 'nullable', 'string', 'max:100'],
                 'last_name'   => ['required', 'string', 'max:100'],
                 'phone'       => ['required', 'nullable', 'string', 'max:10'],
-                'avatar'      => ['sometimes', 'nullable', 'string', 'max:2048'],
+                'avatar'      => ['sometimes', 'nullable', 'string', 'max:255'],
                 'email'       => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($id)],
                 'password'    => ['sometimes', 'nullable', 'string', 'min:8'],
                 'basic_information' => "required|array",
-                "basic_information.gender" => "nullable|string|max:1",
+                "basic_information.gender" => "nullable|numeric",
                 "basic_information.date_of_birth" => "required|date|before_or_equal:today",
                 "basic_information.joining_date" => "required|date",
                 "basic_information.province" => "nullable|string|max:100",
@@ -706,11 +713,11 @@ class EmployeeController extends Controller
                 'middle_name' => ['nullable', 'string', 'max:100'],
                 'last_name'   => ['required', 'string', 'max:100'],
                 'phone'       => ['required', 'string', 'max:50'],
-                'avatar'      => ['sometimes', 'nullable', 'string', 'max:2048'],
+                'avatar'      => ['sometimes', 'nullable', 'string', 'max:255'],
                 'email'       => ['required', 'email', 'max:255', 'unique:users,email'],
                 'password'    => ['required', 'string', 'min:8'],
                 'basic_information' => "required|array",
-                "basic_information.gender" => "nullable|string|max:1",
+                "basic_information.gender" => "nullable|numeric",
                 "basic_information.date_of_birth" => "required|date|before_or_equal:today",
                 "basic_information.joining_date" => "required|date",
                 "basic_information.province" => "nullable|string|max:100",
@@ -719,6 +726,33 @@ class EmployeeController extends Controller
                 "basic_information.address" => "nullable|string|max:255",
                 "basic_information.zip_code" => "required|string|max:100",
                 "basic_information.postal_code" => "required|string|max:100"
+            ];
+        }
+    }
+
+    private function personalInformationRules($id = null): array
+    {
+        if ($id) {
+            return [
+                '_id' => ["required", "string"],
+                'user_id' => ['required', 'uuid', 'exists:users,id'],
+                'basic_information' => "required|array",
+                "basic_information.nationality" => "nullable|string|max:50",
+                "basic_information.religion" => "nullable|string|max:50",
+                "basic_information.blood_group" => "nullable|string|max:4",
+                "basic_information.marital_status" => "nullable|numeric",
+                "basic_information.employment_of_spouse" => "nullable|string|max:10",
+                "basic_information.no_of_children" => "nullable|numeric|max:10"
+            ];
+        } else {
+            return [
+                'basic_information' => "required|array",
+                "basic_information.nationality" => "nullable|string|max:50",
+                "basic_information.religion" => "nullable|string|max:50",
+                "basic_information.blood_group" => "nullable|string|max:4",
+                "basic_information.marital_status" => "nullable|numeric",
+                "basic_information.employment_of_spouse" => "nullable|string|max:10",
+                "basic_information.no_of_children" => "nullable|numeric|max:10"
             ];
         }
     }
