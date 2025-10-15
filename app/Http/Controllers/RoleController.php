@@ -173,10 +173,10 @@ class RoleController extends Controller
     {
         if ($id) {
             return [
-                'name'         => ['sometimes', 'string', 'max:100'],
-                'description'  => ['sometimes', 'nullable', 'string', 'max:255'],
+                'name'         => ['required', 'string', 'max:100'],
+                'description'  => ['nullable', 'string', 'max:255'],
                 'is_superuser' => ['sometimes', 'boolean'],
-                'permissions'  => ['sometimes', 'array'],
+                'permissions'  => ['required', 'array'],
                 'permissions.*' => ['uuid', Rule::exists('permissions', 'id')],
             ];
         } else {
@@ -184,7 +184,7 @@ class RoleController extends Controller
                 'name'         => ['required', 'string', 'max:100'],
                 'description'  => ['nullable', 'string', 'max:255'],
                 'is_superuser' => ['sometimes', 'boolean'],
-                'permissions'  => ['sometimes', 'array'],
+                'permissions'  => ['required', 'array'],
                 'permissions.*' => ['uuid', Rule::exists('permissions', 'id')],
             ];
         }

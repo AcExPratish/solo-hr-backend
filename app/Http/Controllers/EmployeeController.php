@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class EmployeeController extends Controller
 {
@@ -82,6 +84,11 @@ class EmployeeController extends Controller
         try {
             DB::beginTransaction();
 
+            $validator = Validator::make($request->all(), $this->basicInformationRules());
+            if ($validator->fails()) {
+                return $this->sendValidationErrors($validator);
+            }
+
             $user = $this->storeOrUpdateUser($request);
             $employee = new Employee();
             $employee->user_id = $user->id;
@@ -129,6 +136,11 @@ class EmployeeController extends Controller
 
             switch ($slug) {
                 case EmployeeFormTypeEnum::BasicInformation->value:
+                    $validator = Validator::make($request->all(), $this->basicInformationRules($employee->user_id));
+                    if ($validator->fails()) {
+                        return $this->sendValidationErrors($validator);
+                    }
+
                     $this->storeOrUpdateUser($request);
                     $this->storeOrUpdateBasicInformation($request, $employee);
                     break;
@@ -664,5 +676,50 @@ class EmployeeController extends Controller
         }
 
         $employee->experience = $clean;
+    }
+
+    private function basicInformationRules($id = null): array
+    {
+        if ($id) {
+            return [
+                'first_name'  => ['required', 'string', 'max:100'],
+                'middle_name' => ['nullable', 'nullable', 'string', 'max:100'],
+                'last_name'   => ['required', 'string', 'max:100'],
+                'phone'       => ['required', 'nullable', 'string', 'max:10'],
+                'avatar'      => ['sometimes', 'nullable', 'string', 'max:2048'],
+                'email'       => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($id)],
+                'password'    => ['sometimes', 'nullable', 'string', 'min:8'],
+                'basic_information' => "required|array",
+                "basic_information.gender" => "nullable|string|max:1",
+                "basic_information.date_of_birth" => "required|date|before_or_equal:today",
+                "basic_information.joining_date" => "required|date",
+                "basic_information.province" => "nullable|string|max:100",
+                "basic_information.district" => "nullable|string|max:100",
+                "basic_information.city" => "nullable|string|max:100",
+                "basic_information.address" => "nullable|string|max:255",
+                "basic_information.zip_code" => "required|string|max:100",
+                "basic_information.postal_code" => "required|string|max:100"
+            ];
+        } else {
+            return [
+                'first_name'  => ['required', 'string', 'max:100'],
+                'middle_name' => ['nullable', 'string', 'max:100'],
+                'last_name'   => ['required', 'string', 'max:100'],
+                'phone'       => ['required', 'string', 'max:50'],
+                'avatar'      => ['sometimes', 'nullable', 'string', 'max:2048'],
+                'email'       => ['required', 'email', 'max:255', 'unique:users,email'],
+                'password'    => ['required', 'string', 'min:8'],
+                'basic_information' => "required|array",
+                "basic_information.gender" => "nullable|string|max:1",
+                "basic_information.date_of_birth" => "required|date|before_or_equal:today",
+                "basic_information.joining_date" => "required|date",
+                "basic_information.province" => "nullable|string|max:100",
+                "basic_information.district" => "nullable|string|max:100",
+                "basic_information.city" => "nullable|string|max:100",
+                "basic_information.address" => "nullable|string|max:255",
+                "basic_information.zip_code" => "required|string|max:100",
+                "basic_information.postal_code" => "required|string|max:100"
+            ];
+        }
     }
 }
