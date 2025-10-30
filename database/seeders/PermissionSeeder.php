@@ -31,6 +31,11 @@ class PermissionSeeder extends Seeder
             ['code' => 'holidays.view', 'description' => 'Can view holidays and holiday list'],
             ['code' => 'holidays.update', 'description' => 'Can update holidays'],
             ['code' => 'holidays.delete', 'description' => 'Can delete holidays'],
+            ['code' => 'leaves.create', 'description' => 'Can create leaves'],
+            ['code' => 'leaves.decide', 'description' => 'Can decide leaves'],
+            ['code' => 'leaves.view', 'description' => 'Can view leaves and leaves list'],
+            ['code' => 'leaves.update', 'description' => 'Can update leaves'],
+            ['code' => 'leaves.delete', 'description' => 'Can delete leaves'],
         ];
 
         // Insert or update permissions
