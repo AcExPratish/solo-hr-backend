@@ -8,6 +8,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\FileController;
 
 Route::prefix("v1")->group(function () {
@@ -70,5 +71,14 @@ Route::prefix("v1")->group(function () {
 
     Route::group(["prefix" => "file"], function () {
         Route::post('/upload', [FileController::class, 'upload']);
+    });
+
+    Route::group(["prefix" => "leaves", "middleware" => ["auth:api"]], function () {
+        Route::get('/', [LeaveController::class, "index"])->middleware("perm:leaves.view");
+        Route::post('/', [LeaveController::class, 'store'])->middleware('perm:leaves.create');
+        Route::post('/{id}/decide', [LeaveController::class, 'decide'])->middleware('perm:leaves.decide');
+        Route::get('/{id}', [LeaveController::class, 'show'])->middleware('perm:leaves.view');
+        Route::put('/{id}', [LeaveController::class, 'update'])->middleware('perm:leaves.update');
+        Route::delete('/{id}', [LeaveController::class, 'destroy'])->middleware('perm:leaves.delete');
     });
 });
