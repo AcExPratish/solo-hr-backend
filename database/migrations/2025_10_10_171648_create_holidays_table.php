@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('date');
             $table->string('description');
             $table->boolean('status')->default(false);
-            $table->foreignUuid('created_by_id');
-            $table->foreignUuid('updated_by_id');
+            $table->foreignUuid('created_by_id')->nullable();
+            $table->foreignUuid('updated_by_id')->nullable();
             $table->timestamps();
         });
     }

@@ -99,7 +99,7 @@ class LeaveController extends Controller
     public function update(Request $request, $id): JsonResponse
     {
         try {
-            $validator = Validator::make($request->all(), $this->rules());
+            $validator = Validator::make($request->all(), $this->rules($id));
             if ($validator->fails()) {
                 return $this->sendValidationErrors($validator);
             }
@@ -123,7 +123,7 @@ class LeaveController extends Controller
                 'to_date'       => $to,
                 'total_days'    => $totalDays,
                 'reason'        => $request->reason,
-                'approved_by' => Auth::id(),
+                'approved_by_id' => Auth::id(),
                 'updated_by_id' => Auth::id()
             ]);
 
@@ -173,7 +173,7 @@ class LeaveController extends Controller
             if ($request->action === "rejected") {
                 $leave->update([
                     'status' => 'rejected',
-                    'approved_by' => Auth::id(),
+                    'approved_by_id' => Auth::id(),
                     'updated_by_id' => Auth::id()
                 ]);
                 return $this->sendSuccessResponse("Leave rejected", $leave->load('type', 'user', 'approver'));
@@ -190,7 +190,7 @@ class LeaveController extends Controller
             $policy->decrement('remaining_days', $leave->total_days);
             $leave->update([
                 'status' => 'approved',
-                'approved_by' => Auth::id(),
+                'approved_by_id' => Auth::id(),
                 'updated_by_id' => Auth::id()
             ]);
 
@@ -205,7 +205,6 @@ class LeaveController extends Controller
         $statusRule = Rule::in(['pending', 'approved', 'rejected']);
         if ($id) {
             return [
-                'id' => 'required|exists:leaves,id',
                 'user_id' => 'required|exists:users,id',
                 'leave_type_id' => 'required|exists:leave_types,id',
                 'from_date' => 'required|date',

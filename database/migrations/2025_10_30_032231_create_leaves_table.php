@@ -20,9 +20,9 @@ return new class extends Migration
             $table->unsignedInteger('total_days');
             $table->string('reason')->nullable();
             $table->string('status');
-            $table->foreignUuid('approved_by')->nullable();
-            $table->foreignUuid('created_by_id');
-            $table->foreignUuid('updated_by_id');
+            $table->foreignUuid('approved_by_id')->nullable();
+            $table->foreignUuid('created_by_id')->nullable();
+            $table->foreignUuid('updated_by_id')->nullable();
             $table->timestamps();
         });
     }

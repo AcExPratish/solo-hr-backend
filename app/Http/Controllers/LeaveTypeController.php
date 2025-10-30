@@ -3,63 +3,124 @@
 namespace App\Http\Controllers;
 
 use App\Models\LeaveType;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class LeaveTypeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        try {
+            $page  = (int) request('page', 1);
+            $limit = (int) request('limit', 10);
+
+            $query = LeaveType::query();
+
+            $total = (clone $query)->count();
+            $rows  = $query->skip(($page - 1) * $limit)->take($limit)->get();
+
+            return $this->sendPaginateResponse(
+                'Fetch all leave types',
+                $page,
+                $limit,
+                $total,
+                $rows
+            );
+        } catch (\Exception $e) {
+            return $this->sendErrorOfInternalServer($e->getMessage());
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(Request $request): JsonResponse
     {
-        //
+        try {
+            $validator = Validator::make($request->all(), $this->rules());
+            if ($validator->fails()) {
+                return $this->sendValidationErrors($validator);
+            }
+
+            $data = $validator->validated();
+            $data["created_by_id"] = Auth::id();
+            $data["updated_by_id"] = Auth::id();
+
+            $leaveType = LeaveType::create($data);
+
+            return $this->sendSuccessResponse("Leave type created successfully", $leaveType);
+        } catch (\Exception $e) {
+            return $this->sendErrorOfInternalServer($e->getMessage());
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function show($id): JsonResponse
     {
-        //
+        try {
+            $leaveType = LeaveType::find($id);
+            if (!$leaveType) {
+                return $this->sendErrorOfNotFound404("Leave type not found");
+            }
+
+            return $this->sendSuccessResponse("Fetch one leave type", $leaveType);
+        } catch (\Exception $e) {
+            return $this->sendErrorOfInternalServer($e->getMessage());
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(LeaveType $leaveType)
+    public function update(Request $request, $id): JsonResponse
     {
-        //
+        try {
+            $validator = Validator::make($request->all(), $this->rules($id));
+            if ($validator->fails()) {
+                return $this->sendValidationErrors($validator);
+            }
+
+            $data = $validator->validated();
+            $data["updated_by_id"] = Auth::id();
+
+            $leaveType = LeaveType::find($id);
+            if (!$leaveType) {
+                return $this->sendErrorOfNotFound404("Leave type not found");
+            }
+
+            $leaveType->update($data);
+
+            return $this->sendSuccessResponse("Leave type updated successfully", $leaveType);
+        } catch (\Exception $e) {
+            return $this->sendErrorOfInternalServer($e->getMessage());
+        }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(LeaveType $leaveType)
+    public function destroy($id): JsonResponse
     {
-        //
+        try {
+            $leaveType = LeaveType::find($id);
+            if (!$leaveType) {
+                return $this->sendErrorOfNotFound404("Leave type not found");
+            }
+
+            $leaveType->delete();
+
+            return $this->sendSuccessResponse("Leave deleted successfully", $leaveType);
+        } catch (\Exception $e) {
+            return $this->sendErrorOfInternalServer($e->getMessage());
+        }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, LeaveType $leaveType)
+    private function rules($id = null): array
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(LeaveType $leaveType)
-    {
-        //
+        if ($id) {
+            return [
+                'name' => 'required|string|max:100|unique:leave_types,name',
+                'is_paid' => 'required|boolean',
+                'description' => 'nullable|string|max:255'
+            ];
+        } else {
+            return [
+                'name' => 'required|string|max:100|unique:leave_types,name',
+                'is_paid' => 'required|boolean',
+                'description' => 'nullable|string|max:255'
+            ];
+        }
     }
 }

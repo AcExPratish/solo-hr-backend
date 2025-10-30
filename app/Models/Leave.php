@@ -17,7 +17,7 @@ class Leave extends Model
         'total_days',
         'reason',
         'status',
-        'approved_by',
+        'approved_by_id',
         'created_by_id',
         'updated_by_id'
     ];
@@ -34,6 +34,6 @@ class Leave extends Model
 
     public function approver()
     {
-        return $this->belongsTo(User::class, 'approved_by');
+        return $this->belongsTo(User::class, 'approved_by_id');
     }
 }

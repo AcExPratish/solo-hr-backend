@@ -12,7 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('leave_types', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->string('name')->unique();
+            $table->boolean('is_paid')->default(false);
+            $table->string('description')->nullable();
+            $table->foreignUuid('created_by_id')->nullable();
+            $table->foreignUuid('updated_by_id')->nullable();
             $table->timestamps();
         });
     }
