@@ -36,6 +36,14 @@ class PermissionSeeder extends Seeder
             ['code' => 'leaves.view', 'description' => 'Can view leaves and leaves list'],
             ['code' => 'leaves.update', 'description' => 'Can update leaves'],
             ['code' => 'leaves.delete', 'description' => 'Can delete leaves'],
+            ['code' => 'leave-types.create', 'description' => 'Can create leave types'],
+            ['code' => 'leave-types.view', 'description' => 'Can view leave types and leave types list'],
+            ['code' => 'leave-types.update', 'description' => 'Can update leave types'],
+            ['code' => 'leave-types.delete', 'description' => 'Can delete leave types'],
+            ['code' => 'leave-policies.create', 'description' => 'Can create leave policies'],
+            ['code' => 'leave-policies.view', 'description' => 'Can view leave policies and leave policies list'],
+            ['code' => 'leave-policies.update', 'description' => 'Can update leave policies'],
+            ['code' => 'leave-policies.delete', 'description' => 'Can delete leave policies'],
         ];
 
         // Insert or update permissions

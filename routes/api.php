@@ -10,6 +10,8 @@ use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\LeavePolicyController;
+use App\Http\Controllers\LeaveTypeController;
 
 Route::prefix("v1")->group(function () {
     Route::prefix("auth")->group(function () {
@@ -80,5 +82,21 @@ Route::prefix("v1")->group(function () {
         Route::get('/{id}', [LeaveController::class, 'show'])->middleware('perm:leaves.view');
         Route::put('/{id}', [LeaveController::class, 'update'])->middleware('perm:leaves.update');
         Route::delete('/{id}', [LeaveController::class, 'destroy'])->middleware('perm:leaves.delete');
+    });
+
+    Route::group(["prefix" => "leave-types", "middleware" => ["auth:api"]], function () {
+        Route::get('/', [LeaveTypeController::class, "index"])->middleware("perm:leave-types.view");
+        Route::post('/', [LeaveTypeController::class, 'store'])->middleware('perm:leave-types.create');
+        Route::get('/{id}', [LeaveTypeController::class, 'show'])->middleware('perm:leave-types.view');
+        Route::put('/{id}', [LeaveTypeController::class, 'update'])->middleware('perm:leave-types.update');
+        Route::delete('/{id}', [LeaveTypeController::class, 'destroy'])->middleware('perm:leave-types.delete');
+    });
+
+    Route::group(["prefix" => "leave-policies", "middleware" => ["auth:api"]], function () {
+        Route::get('/', [LeavePolicyController::class, "index"])->middleware("perm:leave-policies.view");
+        Route::post('/', [LeavePolicyController::class, 'store'])->middleware('perm:leave-policies.create');
+        Route::get('/{id}', [LeavePolicyController::class, 'show'])->middleware('perm:leave-policies.view');
+        Route::put('/{id}', [LeavePolicyController::class, 'update'])->middleware('perm:leave-policies.update');
+        Route::delete('/{id}', [LeavePolicyController::class, 'destroy'])->middleware('perm:leave-policies.delete');
     });
 });
