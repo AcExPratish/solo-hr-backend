@@ -37,11 +37,16 @@ class LeavePolicyController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
+            if (!$request->has('remaining_days')) {
+                $request->merge(['remaining_days' => $request->input('total_days', 0)]);
+            }
+
             $validator = Validator::make($request->all(), $this->rules());
             if ($validator->fails()) {
                 return $this->sendValidationErrors($validator);
             }
 
+            $data = $validator->validated();
             $data['created_by_id'] = Auth::id();
             $data['updated_by_id'] = Auth::id();
 
@@ -93,6 +98,7 @@ class LeavePolicyController extends Controller
 
             $data = $validator->validated();
             $data["updated_by_id"] = Auth::id();
+
             $leavePolicy->update($data);
 
             return $this->sendSuccessResponse("Leave policy updated successfully", $leavePolicy->load('type', 'user'));
