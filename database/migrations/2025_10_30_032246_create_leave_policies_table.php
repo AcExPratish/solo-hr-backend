@@ -12,7 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('leave_policies', function (Blueprint $table) {
-            $table->id();
+            $table->uuid()->primary();
+            $table->foreignUuid('leave_type_id');
+            $table->foreignUuid('user_id');
+            $table->string('policy_name')->nullable();
+            $table->unsignedInteger('total_days')->default(0);
+            $table->unsignedInteger('remaining_days')->default(0);
+            $table->foreignUuid('created_by_id')->nullable();
+            $table->foreignUuid('updated_by_id')->nullable();
+            $table->unique(['leave_type_id', 'user_id']);
             $table->timestamps();
         });
     }
