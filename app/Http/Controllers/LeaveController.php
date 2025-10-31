@@ -22,7 +22,7 @@ class LeaveController extends Controller
             $status = (string) request('status', '');
 
             $query = Leave::query()
-                ->with(['user', 'type', 'approver'])
+                ->with(['user', 'approver'])
                 ->when(!empty($user_id), fn($q) => $q->where('user_id', $user_id))
                 ->when(!empty($status), fn($q) => $q->where('status', $status));
 
@@ -76,7 +76,7 @@ class LeaveController extends Controller
                 'updated_by_id' => Auth::id()
             ]);
 
-            return $this->sendSuccessResponse('Leave created successfully', $leave->load('type', 'user'));
+            return $this->sendSuccessResponse('Leave created successfully', $leave->load('user'));
         } catch (\Exception $e) {
             return $this->sendErrorOfInternalServer($e->getMessage());
         }
@@ -90,7 +90,7 @@ class LeaveController extends Controller
                 return $this->sendErrorOfNotFound404("Leave not found");
             }
 
-            return $this->sendSuccessResponse('Fetch one leave', $leave->load('type', 'user', 'approver'));
+            return $this->sendSuccessResponse('Fetch one leave', $leave->load('user', 'approver'));
         } catch (\Exception $e) {
             return $this->sendErrorOfInternalServer($e->getMessage());
         }
@@ -127,7 +127,7 @@ class LeaveController extends Controller
                 'updated_by_id' => Auth::id()
             ]);
 
-            return $this->sendSuccessResponse('Leave updated successfully', $leave->load('type', 'user', 'approver'));
+            return $this->sendSuccessResponse('Leave updated successfully', $leave->load('user', 'approver'));
         } catch (\Exception $e) {
             return $this->sendErrorOfInternalServer($e->getMessage());
         }
@@ -176,7 +176,7 @@ class LeaveController extends Controller
                     'approved_by_id' => Auth::id(),
                     'updated_by_id' => Auth::id()
                 ]);
-                return $this->sendSuccessResponse("Leave rejected", $leave->load('type', 'user', 'approver'));
+                return $this->sendSuccessResponse("Leave rejected", $leave->load('user', 'approver'));
             }
 
             $policy = LeavePolicy::where('user_id', $leave->user_id)
@@ -194,7 +194,7 @@ class LeaveController extends Controller
                 'updated_by_id' => Auth::id()
             ]);
 
-            return $this->sendSuccessResponse("Leave approved", $leave->load('type', 'user', 'approver'));
+            return $this->sendSuccessResponse("Leave approved", $leave->load('user', 'approver'));
         } catch (\Exception $e) {
             return $this->sendErrorOfInternalServer($e->getMessage());
         }
