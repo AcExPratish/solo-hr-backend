@@ -76,7 +76,7 @@ Route::prefix("v1")->group(function () {
     });
 
     Route::group(["prefix" => "leaves", "middleware" => ["auth:api"]], function () {
-        Route::get('/', [LeaveController::class, "index"])->middleware("perm:leaves.view");
+        Route::get('/', [LeaveController::class, "index"]);
         Route::post('/', [LeaveController::class, 'store'])->middleware('perm:leaves.create');
         Route::post('/{id}/decide', [LeaveController::class, 'decide'])->middleware('perm:leaves.decide');
         Route::get('/{id}', [LeaveController::class, 'show'])->middleware('perm:leaves.view');
@@ -85,7 +85,7 @@ Route::prefix("v1")->group(function () {
     });
 
     Route::group(["prefix" => "leave-types", "middleware" => ["auth:api"]], function () {
-        Route::get('/', [LeaveTypeController::class, "index"])->middleware("perm:leave-types.view");
+        Route::get('/', [LeaveTypeController::class, "index"]);
         Route::post('/', [LeaveTypeController::class, 'store'])->middleware('perm:leave-types.create');
         Route::get('/{id}', [LeaveTypeController::class, 'show'])->middleware('perm:leave-types.view');
         Route::put('/{id}', [LeaveTypeController::class, 'update'])->middleware('perm:leave-types.update');
